@@ -12,15 +12,8 @@ import org.springframework.util.Assert;
 @SpringBootTest
 public class PricingServiceApplicationTests {
 
-	private Long vehicleId = 1L;
-
 	@Test
 	public void contextLoads() {
-	}
-
-	@Test
-	public void testPrice() throws PriceException {
-		Assert.notNull(PricingService.getPrice(vehicleId), "Price retrieved!");
 	}
 
 }

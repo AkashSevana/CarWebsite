@@ -7,7 +7,10 @@ import com.udacity.vehicles.domain.car.Car;
 import com.udacity.vehicles.domain.car.CarRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Implements the car service create, read, update or delete
@@ -34,7 +37,10 @@ public class CarService {
      * @return a list of all vehicles in the CarRepository
      */
     public List<Car> list() {
-        return repository.findAll();
+        return repository.findAll()
+                .stream()
+                .map(car -> setLocationAndPrice(car.getId(), car))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -45,7 +51,11 @@ public class CarService {
     public Car findById(Long id) {
 
         Car car = repository.findById(id).orElseThrow(CarNotFoundException::new);
+        car = setLocationAndPrice(id, car);
+        return car;
+    }
 
+    private Car setLocationAndPrice(Long id, Car car) {
         /**
          * Note: The car class file uses @transient, meaning you will need to call
          *   the pricing service each time to get the price.
@@ -60,7 +70,6 @@ public class CarService {
         Location carLocation = mapsClient.getAddress(car.getLocation());
         car.setLocation(carLocation);
 
-
         return car;
     }
 
@@ -74,11 +83,15 @@ public class CarService {
             return repository.findById(car.getId())
                     .map(carToBeUpdated -> {
                         carToBeUpdated.setDetails(car.getDetails());
-                        carToBeUpdated.setLocation(car.getLocation());
+                        carToBeUpdated.setCondition(car.getCondition());
+                        carToBeUpdated.setCreatedAt(car.getCreatedAt());
+                        carToBeUpdated.setModifiedAt(LocalDateTime.now());
+                        carToBeUpdated = setLocationAndPrice(car.getId(), carToBeUpdated);
                         return repository.save(carToBeUpdated);
                     }).orElseThrow(CarNotFoundException::new);
         }
 
+        car.setCreatedAt(LocalDateTime.now());
         return repository.save(car);
     }
 
